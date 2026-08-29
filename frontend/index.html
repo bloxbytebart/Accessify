@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Accessify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Hidden SVG filter defs used by the Color Blind section.
+       IMPORTANT: these are honestly-scoped effects, not a "cure":
+       - grayscale is a real, correct transform
+       - boost-saturation genuinely increases hue separation for some
+         anomalous (not fully dichromatic) color vision
+       We deliberately do NOT ship "protanopia/deuteranopia correction"
+       filters - the matrices commonly found online for that are built to
+       SIMULATE color blindness for sighted viewers, not correct it for
+       colorblind viewers. Applying a simulation matrix to a colorblind
+       person's own screen does not help them and could make things worse,
+       so we don't pretend otherwise here. See README. -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="cvd-grayscale">
+      <feColorMatrix type="saturate" values="0" />
+    </filter>
+    <filter id="cvd-boost">
+      <feColorMatrix type="saturate" values="1.6" />
+    </filter>
+  </svg>
+
+  <!-- ============ HOME SCREEN ============ -->
+  <main id="screen-home" class="screen">
+    <div class="top-bar">
+      <h1>🌐 Accessify</h1>
+      <button id="settings-btn-home" class="icon-btn" aria-label="Accessibility settings">⚙️</button>
+    </div>
+    <p class="subtitle">What do you have?</p>
+
+    <div class="content-grid">
+      <button class="content-btn" data-type="image">📷<span>Image</span></button>
+      <button class="content-btn" data-type="document">📄<span>Document</span></button>
+      <button class="content-btn active" data-type="text">📝<span>Text</span><span class="active-check" aria-hidden="true">✓</span></button>
+      <button class="content-btn" data-type="voice">🎙️<span>Voice</span></button>
+    </div>
+
+    <div id="text-input-area" class="input-area">
+      <label for="content-text">Paste or type your content</label>
+      <textarea id="content-text" rows="6" placeholder="Paste text here…"></textarea>
+    </div>
+
+    <div id="coming-soon-area" class="input-area hidden">
+      <p class="hint">This input type isn't wired up yet in this build — coming in a later phase.</p>
+    </div>
+
+    <div class="instruction-area">
+      <button id="mic-btn" class="mic-btn">🎙️ Tell me what you need</button>
+      <div id="recording-indicator" class="hidden">● Recording… tap again to stop</div>
+      <p class="or-divider">or type it</p>
+      <input id="instruction-text" type="text" placeholder="e.g. Translate this into Hindi and make it simple" />
+      <button id="go-btn" class="go-btn">Go</button>
+    </div>
+
+    <p id="home-error" class="error hidden"></p>
+  </main>
+
+  <!-- ============ OUTPUT SCREEN ============ -->
+  <main id="screen-output" class="screen hidden">
+    <div class="top-bar">
+      <button id="back-btn" class="icon-btn" aria-label="Back">←</button>
+      <h1>Accessify</h1>
+      <button id="settings-btn-output" class="icon-btn" aria-label="Accessibility settings">⚙️</button>
+    </div>
+
+    <p class="detected-instruction" id="detected-instruction"></p>
+
+    <div class="result-box">
+      <p id="result-text"></p>
+    </div>
+
+    <button id="read-aloud-btn" class="secondary-btn">🔊 Read aloud</button>
+
+    <p id="output-error" class="error hidden"></p>
+
+    <div class="instruction-area">
+      <button id="followup-mic-btn" class="mic-btn">🎙️ Ask a follow-up</button>
+      <div id="followup-recording-indicator" class="hidden">● Recording… tap again to stop</div>
+      <p class="or-divider">or type it</p>
+      <input id="followup-text" type="text" placeholder="e.g. Explain that word" />
+      <button id="followup-go-btn" class="go-btn">Go</button>
+    </div>
+  </main>
+
+  <!-- ============ SETTINGS SCREEN ============ -->
+  <main id="screen-settings" class="screen hidden">
+    <div class="top-bar">
+      <button id="settings-back-btn" class="icon-btn" aria-label="Back">←</button>
+      <h1>Accessibility Settings</h1>
+      <span class="icon-btn-spacer" aria-hidden="true"></span>
+    </div>
+    <p class="subtitle small">Pick what you need. Nothing else.</p>
+
+    <details class="setting-section" open>
+      <summary>🎨 Color Blind</summary>
+      <div class="setting-body">
+        <p class="setting-note">This app never uses color alone to show
+          something — icons and text always come with it too.</p>
+        <p class="control-label">Color filter</p>
+        <div class="pill-group" data-setting="cvdFilter">
+          <button class="pill" data-value="off">Off</button>
+          <button class="pill" data-value="grayscale">Grayscale</button>
+          <button class="pill" data-value="boost">Boost color difference</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="setting-section">
+      <summary>👁️ Visual</summary>
+      <div class="setting-body">
+        <p class="control-label">Text size</p>
+        <div class="pill-group" data-setting="textSize">
+          <button class="pill" data-value="small">Small</button>
+          <button class="pill" data-value="medium">Medium</button>
+          <button class="pill" data-value="large">Large</button>
+          <button class="pill" data-value="xlarge">Extra large</button>
+        </div>
+
+        <p class="control-label">UI size</p>
+        <div class="pill-group" data-setting="uiSize">
+          <button class="pill" data-value="small">Small</button>
+          <button class="pill" data-value="medium">Medium</button>
+          <button class="pill" data-value="large">Large</button>
+          <button class="pill" data-value="xlarge">Extra large</button>
+        </div>
+
+        <p class="control-label">Button size</p>
+        <div class="pill-group" data-setting="buttonSize">
+          <button class="pill" data-value="small">Small</button>
+          <button class="pill" data-value="medium">Medium</button>
+          <button class="pill" data-value="large">Large</button>
+          <button class="pill" data-value="xlarge">Extra large</button>
+        </div>
+
+        <p class="control-label">Font</p>
+        <div class="pill-group" data-setting="font">
+          <button class="pill" data-value="default">Default</button>
+          <button class="pill" data-value="dyslexia">Dyslexia-friendly</button>
+        </div>
+
+        <p class="control-label">Spacing</p>
+        <div class="pill-group" data-setting="spacing">
+          <button class="pill" data-value="compact">Compact</button>
+          <button class="pill" data-value="comfortable">Comfortable</button>
+          <button class="pill" data-value="spacious">Spacious</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="setting-section">
+      <summary>◼️ High Contrast</summary>
+      <div class="setting-body">
+        <p class="control-label">Contrast level</p>
+        <div class="pill-group" data-setting="contrast">
+          <button class="pill" data-value="off">Off</button>
+          <button class="pill" data-value="medium">Medium</button>
+          <button class="pill" data-value="high">High</button>
+        </div>
+
+        <div class="toggle-row" data-setting="strongBorders">
+          <span>Stronger borders</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+        </div>
+
+        <div class="toggle-row" data-setting="clearerText">
+          <span>Clearer text</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+        </div>
+      </div>
+    </details>
+
+    <details class="setting-section">
+      <summary>🔊 Audio</summary>
+      <div class="setting-body">
+        <div class="toggle-row" data-setting="audioCues">
+          <span>Audio cues</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+        </div>
+
+        <p class="control-label">Voice speed</p>
+        <div class="slider-row">
+          <span>Slower</span>
+          <input type="range" min="0.6" max="1.6" step="0.05" data-setting="voiceSpeed" />
+          <span>Faster</span>
+        </div>
+
+        <p class="control-label">Voice volume</p>
+        <div class="slider-row">
+          <span>Quiet</span>
+          <input type="range" min="0" max="1" step="0.05" data-setting="voiceVolume" />
+          <span>Loud</span>
+        </div>
+
+        <div class="toggle-row" data-setting="readAloud">
+          <span>Automatically read results aloud</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+        </div>
+        <p class="setting-note">Reads results using your device's built-in
+          voice for now. Higher-quality voices in more languages are
+          coming soon.</p>
+      </div>
+    </details>
+  </main>
+
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+    <p>Working on it…</p>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="settings.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
