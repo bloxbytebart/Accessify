@@ -23,8 +23,11 @@ const loadingOverlay = document.getElementById("loading-overlay");
 
 const contentBtns = document.querySelectorAll(".content-btn");
 const textInputArea = document.getElementById("text-input-area");
+const imageInputArea = document.getElementById("image-input-area");
 const comingSoonArea = document.getElementById("coming-soon-area");
 const contentTextEl = document.getElementById("content-text");
+const contentImageInput = document.getElementById("content-image-input");
+const imagePreview = document.getElementById("image-preview");
 
 const micBtn = document.getElementById("mic-btn");
 const recordingIndicator = document.getElementById("recording-indicator");
@@ -48,6 +51,9 @@ const settingsBtnOutput = document.getElementById("settings-btn-output");
 const settingsBackBtn = document.getElementById("settings-back-btn");
 
 // ============ Content type selection ============
+let selectedContentType = "text";
+let selectedImageFile = null;
+
 contentBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     contentBtns.forEach((b) => {
@@ -63,15 +69,28 @@ contentBtns.forEach((btn) => {
       check.textContent = "✓";
       btn.appendChild(check);
     }
-    const type = btn.dataset.type;
-    if (type === "text") {
-      textInputArea.classList.remove("hidden");
-      comingSoonArea.classList.add("hidden");
-    } else {
-      textInputArea.classList.add("hidden");
-      comingSoonArea.classList.remove("hidden");
-    }
+    selectedContentType = btn.dataset.type;
+    textInputArea.classList.toggle("hidden", selectedContentType !== "text");
+    imageInputArea.classList.toggle("hidden", selectedContentType !== "image");
+    comingSoonArea.classList.toggle(
+      "hidden",
+      selectedContentType === "text" || selectedContentType === "image"
+    );
   });
+});
+
+contentImageInput.addEventListener("change", () => {
+  const file = contentImageInput.files[0];
+  if (!file) {
+    selectedImageFile = null;
+    imagePreview.classList.add("hidden");
+    return;
+  }
+  selectedImageFile = file;
+  const url = URL.createObjectURL(file);
+  imagePreview.src = url;
+  imagePreview.classList.remove("hidden");
+  imagePreview.onload = () => URL.revokeObjectURL(url);
 });
 
 // ============ Recording ============
@@ -148,15 +167,28 @@ readAloudBtn.addEventListener("click", () => {
 // ============ Submit logic ============
 async function submitHome({ instructionText, audioBlob }) {
   clearError(homeError);
-  const contentText = contentTextEl.value.trim();
-  if (!contentText) {
-    showError(homeError, "Add some text content first (Image/Document/Voice input arrive in a later phase).");
+
+  const form = new FormData();
+  form.append("history_json", "[]");
+
+  if (selectedContentType === "text") {
+    const contentText = contentTextEl.value.trim();
+    if (!contentText) {
+      showError(homeError, "Add some text content first.");
+      return;
+    }
+    form.append("content_text", contentText);
+  } else if (selectedContentType === "image") {
+    if (!selectedImageFile) {
+      showError(homeError, "Choose or take a photo first.");
+      return;
+    }
+    form.append("content_image", selectedImageFile, selectedImageFile.name || "content.jpg");
+  } else {
+    showError(homeError, "This input type isn't wired up yet in this build — try Text or Image.");
     return;
   }
 
-  const form = new FormData();
-  form.append("content_text", contentText);
-  form.append("history_json", "[]");
   if (audioBlob) form.append("instruction_audio", audioBlob, "instruction.webm");
   else form.append("instruction_text", instructionText);
 

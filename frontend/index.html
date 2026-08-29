@@ -51,6 +51,12 @@
       <textarea id="content-text" rows="6" placeholder="Paste text here…"></textarea>
     </div>
 
+    <div id="image-input-area" class="input-area hidden">
+      <label for="content-image-input">Choose a photo, or take one now</label>
+      <input type="file" id="content-image-input" accept="image/*" capture="environment" />
+      <img id="image-preview" class="image-preview hidden" alt="Preview of the selected photo" />
+    </div>
+
     <div id="coming-soon-area" class="input-area hidden">
       <p class="hint">This input type isn't wired up yet in this build — coming in a later phase.</p>
     </div>

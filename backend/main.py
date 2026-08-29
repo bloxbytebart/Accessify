@@ -122,6 +122,7 @@ async def transform(
     instruction_text: str = Form(""),
     history_json: str = Form("[]"),
     instruction_audio: Optional[UploadFile] = None,
+    content_image: Optional[UploadFile] = None,
 ):
     if client is None:
         return {
@@ -135,17 +136,34 @@ async def transform(
     except json.JSONDecodeError:
         history = []
 
-    if not content_text.strip() and not history:
+    if not content_text.strip() and content_image is None and not history:
         return {"error": "No content provided and no prior conversation to follow up on."}
     if not instruction_text.strip() and instruction_audio is None:
         return {"error": "No instruction given (neither typed text nor recorded audio)."}
 
     user_parts: List[types.Part] = []
-    user_parts.append(
-        types.Part.from_text(
-            text=f"CONTENT:\n{content_text if content_text.strip() else '(none - this is a follow-up, use the conversation so far)'}"
+    content_summary_for_history = "(none)"
+
+    if content_image is not None:
+        image_bytes = await content_image.read()
+        image_mime = (content_image.content_type or "image/jpeg").split(";")[0]
+        user_parts.append(
+            types.Part.from_text(
+                text="CONTENT: an image is attached below. Read any text in it "
+                "(OCR) and treat that - plus anything else relevant you can see "
+                "- as the CONTENT to transform, unless the instruction is "
+                "specifically asking you to describe or explain the image itself."
+            )
         )
-    )
+        user_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=image_mime))
+        content_summary_for_history = "(an image was provided as content)"
+    else:
+        content_summary_for_history = content_text if content_text.strip() else "(none - follow-up)"
+        user_parts.append(
+            types.Part.from_text(
+                text=f"CONTENT:\n{content_text if content_text.strip() else '(none - this is a follow-up, use the conversation so far)'}"
+            )
+        )
 
     if instruction_audio is not None:
         audio_bytes = await instruction_audio.read()
@@ -179,7 +197,7 @@ async def transform(
     transformed_output = result.get("transformed_output", "")
 
     new_history = history + [
-        {"role": "user", "text": f"[CONTENT]\n{content_text}\n\n[INSTRUCTION]\n{detected_instruction}"},
+        {"role": "user", "text": f"[CONTENT]\n{content_summary_for_history}\n\n[INSTRUCTION]\n{detected_instruction}"},
         {"role": "model", "text": transformed_output},
     ]
 
