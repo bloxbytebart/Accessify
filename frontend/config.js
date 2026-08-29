@@ -6,4 +6,4 @@
 //   ("localhost" from inside the phone means the phone itself, not your PC)
 // - After you deploy the backend (Phase 7, e.g. to Render/Fly.io): its
 //   public https:// URL. This is what ships inside the real APK.
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://accessify-1i0n.onrender.com";
