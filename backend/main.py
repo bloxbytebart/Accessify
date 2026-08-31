@@ -123,6 +123,7 @@ async def transform(
     history_json: str = Form("[]"),
     instruction_audio: Optional[UploadFile] = None,
     content_image: Optional[UploadFile] = None,
+    content_document: Optional[UploadFile] = None,
 ):
     if client is None:
         return {
@@ -136,7 +137,8 @@ async def transform(
     except json.JSONDecodeError:
         history = []
 
-    if not content_text.strip() and content_image is None and not history:
+    has_content = content_text.strip() or content_image is not None or content_document is not None
+    if not has_content and not history:
         return {"error": "No content provided and no prior conversation to follow up on."}
     if not instruction_text.strip() and instruction_audio is None:
         return {"error": "No instruction given (neither typed text nor recorded audio)."}
@@ -157,6 +159,19 @@ async def transform(
         )
         user_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=image_mime))
         content_summary_for_history = "(an image was provided as content)"
+    elif content_document is not None:
+        doc_bytes = await content_document.read()
+        doc_mime = (content_document.content_type or "application/pdf").split(";")[0]
+        user_parts.append(
+            types.Part.from_text(
+                text="CONTENT: a document is attached below. Read its text "
+                "content and treat that as the CONTENT to transform, unless "
+                "the instruction asks something else about the document "
+                "itself (e.g. 'how many pages')."
+            )
+        )
+        user_parts.append(types.Part.from_bytes(data=doc_bytes, mime_type=doc_mime))
+        content_summary_for_history = "(a document was provided as content)"
     else:
         content_summary_for_history = content_text if content_text.strip() else "(none - follow-up)"
         user_parts.append(

@@ -24,10 +24,13 @@ const loadingOverlay = document.getElementById("loading-overlay");
 const contentBtns = document.querySelectorAll(".content-btn");
 const textInputArea = document.getElementById("text-input-area");
 const imageInputArea = document.getElementById("image-input-area");
+const documentInputArea = document.getElementById("document-input-area");
 const comingSoonArea = document.getElementById("coming-soon-area");
 const contentTextEl = document.getElementById("content-text");
 const contentImageInput = document.getElementById("content-image-input");
 const imagePreview = document.getElementById("image-preview");
+const contentDocumentInput = document.getElementById("content-document-input");
+const documentFilenameEl = document.getElementById("document-filename");
 
 const micBtn = document.getElementById("mic-btn");
 const recordingIndicator = document.getElementById("recording-indicator");
@@ -53,6 +56,7 @@ const settingsBackBtn = document.getElementById("settings-back-btn");
 // ============ Content type selection ============
 let selectedContentType = "text";
 let selectedImageFile = null;
+let selectedDocumentFile = null;
 
 contentBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -72,9 +76,10 @@ contentBtns.forEach((btn) => {
     selectedContentType = btn.dataset.type;
     textInputArea.classList.toggle("hidden", selectedContentType !== "text");
     imageInputArea.classList.toggle("hidden", selectedContentType !== "image");
+    documentInputArea.classList.toggle("hidden", selectedContentType !== "document");
     comingSoonArea.classList.toggle(
       "hidden",
-      selectedContentType === "text" || selectedContentType === "image"
+      selectedContentType === "text" || selectedContentType === "image" || selectedContentType === "document"
     );
   });
 });
@@ -91,6 +96,18 @@ contentImageInput.addEventListener("change", () => {
   imagePreview.src = url;
   imagePreview.classList.remove("hidden");
   imagePreview.onload = () => URL.revokeObjectURL(url);
+});
+
+contentDocumentInput.addEventListener("change", () => {
+  const file = contentDocumentInput.files[0];
+  if (!file) {
+    selectedDocumentFile = null;
+    documentFilenameEl.classList.add("hidden");
+    return;
+  }
+  selectedDocumentFile = file;
+  documentFilenameEl.textContent = `📄 ${file.name}`;
+  documentFilenameEl.classList.remove("hidden");
 });
 
 // ============ Recording ============
@@ -184,8 +201,14 @@ async function submitHome({ instructionText, audioBlob }) {
       return;
     }
     form.append("content_image", selectedImageFile, selectedImageFile.name || "content.jpg");
+  } else if (selectedContentType === "document") {
+    if (!selectedDocumentFile) {
+      showError(homeError, "Choose a PDF first.");
+      return;
+    }
+    form.append("content_document", selectedDocumentFile, selectedDocumentFile.name || "content.pdf");
   } else {
-    showError(homeError, "This input type isn't wired up yet in this build — try Text or Image.");
+    showError(homeError, "This input type isn't wired up yet in this build — try Text, Image, or Document.");
     return;
   }
 
