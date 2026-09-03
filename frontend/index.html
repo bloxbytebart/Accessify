@@ -12,17 +12,8 @@
 </head>
 <body>
 
-  <!-- Hidden SVG filter defs used by the Color Blind section.
-       IMPORTANT: these are honestly-scoped effects, not a "cure":
-       - grayscale is a real, correct transform
-       - boost-saturation genuinely increases hue separation for some
-         anomalous (not fully dichromatic) color vision
-       We deliberately do NOT ship "protanopia/deuteranopia correction"
-       filters - the matrices commonly found online for that are built to
-       SIMULATE color blindness for sighted viewers, not correct it for
-       colorblind viewers. Applying a simulation matrix to a colorblind
-       person's own screen does not help them and could make things worse,
-       so we don't pretend otherwise here. See README. -->
+
+    
   <svg width="0" height="0" style="position:absolute">
     <filter id="cvd-grayscale">
       <feColorMatrix type="saturate" values="0" />
@@ -68,9 +59,7 @@
     </div>
 
     <div id="voice-content-area" class="input-area hidden">
-      <p class="hint"><span class="icon icon-mic" aria-hidden="true"></span> Tap the mic below and say everything in one go —
-        your content, then what you want done with it (or the other way
-        around). Or type it all as one block if you'd rather.</p>
+      <p class="hint"><span class="icon icon-mic" aria-hidden="true"></span> Add your instructions here.</p>
     </div>
 
     <div id="coming-soon-area" class="input-area hidden">
