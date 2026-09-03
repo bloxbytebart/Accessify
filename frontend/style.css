@@ -6,34 +6,97 @@
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --cvd-filter: none;
 
-  --bg: #0f1720;
-  --card: #182534;
-  --accent: #4f9dff;     /* blue/orange pairing chosen deliberately: */
-  --accent-dark: #2f6fc9; /* stays distinguishable under protanopia and */
-  --status-warn: #e8a13d; /* deuteranopia, unlike red/green pairs */
-  --text: #f2f5f8;
-  --muted: #9fb0c0;
-  --error: #ff6b6b;
+  /* warm, minimal palette */
+  --bg: #F7EFE1;          /* warm beige page background */
+  --card: #FFFFFF;
+  --text: #3A352E;        /* soft warm charcoal - never pitch black */
+  --muted: #9C9384;
+  --border: #E9DFC9;
+
+  --accent: #2F86EB;      /* primary CTA blue, matches the logo */
+  --accent-dark: #1E6FD1;
+  --error: #EF5350;
+  --success: #3CB878;
+
+  /* Kahoot-style flat colors, one per content-type tile */
+  --tile-image: #EF5350;      /* red */
+  --tile-document: #2F86EB;   /* blue */
+  --tile-text: #F5B942;       /* yellow */
+  --tile-voice: #3CB878;      /* green */
+
+  --overlay: rgba(247, 239, 225, 0.92);
+  --pill-selected-bg: #E9F2FE;
 }
 
 * { box-sizing: border-box; }
 
 html {
   font-size: calc(18px * var(--text-scale));
+}
+
+body {
   filter: var(--cvd-filter);
+}
+
+/* ---------- Icon system ---------- */
+/* Material Symbols SVGs are single-color, so instead of <img> (which
+   can't be recolored via CSS) we use them as CSS masks. background-color
+   is set to currentColor, meaning every icon automatically matches
+   whatever text color its container already uses - white on the colorful
+   tiles, var(--text)/var(--muted) elsewhere, and it adapts to dark mode
+   and high contrast for free, with zero extra per-icon overrides needed. */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  vertical-align: middle;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.icon-camera    { -webkit-mask-image: url('assets/icons/camera.svg');    mask-image: url('assets/icons/camera.svg'); }
+.icon-document  { -webkit-mask-image: url('assets/icons/document.svg');  mask-image: url('assets/icons/document.svg'); }
+.icon-text      { -webkit-mask-image: url('assets/icons/text.svg');      mask-image: url('assets/icons/text.svg'); }
+.icon-mic       { -webkit-mask-image: url('assets/icons/mic.svg');       mask-image: url('assets/icons/mic.svg'); }
+.icon-settings  { -webkit-mask-image: url('assets/icons/settings.svg');  mask-image: url('assets/icons/settings.svg'); }
+.icon-back      { -webkit-mask-image: url('assets/icons/back.svg');      mask-image: url('assets/icons/back.svg'); }
+.icon-visual    { -webkit-mask-image: url('assets/icons/visual.svg');    mask-image: url('assets/icons/visual.svg'); }
+.icon-contrast  { -webkit-mask-image: url('assets/icons/contrast.svg');  mask-image: url('assets/icons/contrast.svg'); }
+.icon-warning   { -webkit-mask-image: url('assets/icons/warning.svg');   mask-image: url('assets/icons/warning.svg'); }
+.icon-audio     { -webkit-mask-image: url('assets/icons/audio.svg');     mask-image: url('assets/icons/audio.svg'); }
+
+/* ---------- Dark mode ---------- */
+/* Placed before the high-contrast rules below so contrast mode always
+   wins if both are on at once - same equal-specificity attribute
+   selector, later rule in the file takes precedence. */
+html[data-theme="dark"] {
+  --bg: #1E1A15;
+  --card: #2A241D;
+  --text: #F2ECE0;
+  --muted: #B8AF9E;
+  --border: #3D362C;
+  --overlay: rgba(30, 26, 21, 0.92);
+  --pill-selected-bg: #2C4A6B;
 }
 
 /* ---------- High contrast levels ---------- */
 html[data-contrast="medium"] {
-  --muted: #d3dde6;
-  --bg: #070c11;
-  --text: #ffffff;
+  --muted: #55504A;
+  --bg: #FFFFFF;
+  --text: #1F1B16;
+  --border: #C9C0AE;
 }
 html[data-contrast="high"] {
-  --muted: #ffffff;
+  --muted: #FFFFFF;
   --bg: #000000;
   --card: #000000;
-  --text: #ffffff;
+  --text: #FFFFFF;
+  --border: #FFFFFF;
 }
 html[data-contrast="high"] .content-btn,
 html[data-contrast="high"] .result-box,
@@ -86,16 +149,29 @@ body {
   gap: 8px;
 }
 
+.brand-logo {
+  height: calc(28px * var(--text-scale));
+  width: auto;
+  flex: 1;
+  /* the source PNG has an opaque white background rather than
+     transparency - multiply blend makes white pixels disappear into
+     whatever's behind them (our beige page), while the dark logo text
+     stays dark regardless. Standard trick for flattened logo exports. */
+  mix-blend-mode: multiply;
+  object-fit: contain;
+}
+
 h1 {
   text-align: center;
   font-size: 1.6rem;
   margin: 8px 0 0;
   flex: 1;
+  font-weight: 700;
 }
 
 .icon-btn {
   background: var(--card);
-  border: none;
+  border: 1px solid var(--border);
   color: var(--text);
   font-size: calc(1.4rem * var(--button-scale));
   min-width: calc(44px * var(--button-scale));
@@ -125,10 +201,9 @@ h1 {
 
 .content-btn {
   position: relative;
-  background: var(--card);
-  border: 2px solid transparent;
-  border-radius: calc(16px * var(--ui-scale));
-  color: var(--text);
+  border: 4px solid transparent;
+  border-radius: calc(18px * var(--ui-scale));
+  color: #FFFFFF;
   font-size: 2rem;
   padding: calc(20px * var(--ui-scale)) calc(10px * var(--ui-scale));
   display: flex;
@@ -136,25 +211,40 @@ h1 {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
+  transition: transform 0.08s ease;
 }
+.content-btn:active { transform: translateY(2px); }
 
-.content-btn span { font-size: 1rem; }
+.content-btn[data-type="image"] { background: var(--tile-image); }
+.content-btn[data-type="document"] { background: var(--tile-document); }
+.content-btn[data-type="text"] { background: var(--tile-text); color: #3A352E; }
+.content-btn[data-type="voice"] { background: var(--tile-voice); }
+
+.content-btn span { font-size: 1rem; font-weight: 600; }
 
 .content-btn .active-check {
   display: none;
   position: absolute;
   top: 8px;
-  right: 10px;
-  font-size: 1rem;
-  color: var(--accent);
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .content-btn.active {
-  border-color: var(--accent);
-  background: #1e2e40;
+  border-color: var(--text);
 }
 .content-btn.active .active-check {
-  display: inline; /* never rely on the border color alone */
+  display: flex; /* never rely on color/border alone */
 }
 
 .input-area label {
@@ -166,7 +256,7 @@ h1 {
 textarea, input[type="text"] {
   width: 100%;
   background: var(--card);
-  border: 1px solid #2a3b4d;
+  border: 1px solid var(--border);
   border-radius: calc(12px * var(--ui-scale));
   color: var(--text);
   padding: calc(14px * var(--ui-scale));
@@ -193,7 +283,8 @@ input[type="file"] {
   object-fit: contain;
   border-radius: calc(12px * var(--ui-scale));
   margin-top: calc(10px * var(--gap-scale));
-  background: var(--bg);
+  background: var(--card);
+  border: 1px solid var(--border);
 }
 
 .instruction-area {
@@ -205,19 +296,19 @@ input[type="file"] {
 
 .mic-btn {
   background: var(--accent);
-  color: #051221;
+  color: #FFFFFF;
   border: none;
   border-radius: 999px;
   padding: calc(18px * var(--button-scale));
   min-height: calc(48px * var(--button-scale));
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
 }
 
 .mic-btn.recording {
   background: var(--error);
-  color: white;
 }
 
 #recording-indicator, #followup-recording-indicator {
@@ -235,19 +326,20 @@ input[type="file"] {
 
 .go-btn, .secondary-btn {
   background: var(--accent-dark);
-  color: white;
+  color: #FFFFFF;
   border: none;
   border-radius: calc(12px * var(--ui-scale));
   padding: calc(14px * var(--button-scale));
   min-height: calc(44px * var(--button-scale));
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .secondary-btn {
   background: var(--card);
   color: var(--text);
-  border: 1px solid #2a3b4d;
+  border: 1px solid var(--border);
 }
 
 .error {
@@ -264,6 +356,7 @@ input[type="file"] {
 
 .result-box {
   background: var(--card);
+  border: 1px solid var(--border);
   border-radius: calc(16px * var(--ui-scale));
   padding: calc(20px * var(--ui-scale));
   min-height: 120px;
@@ -279,19 +372,20 @@ input[type="file"] {
 #loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 32, 0.85);
+  background: var(--overlay);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
   z-index: 10;
+  color: var(--text);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #2a3b4d;
+  border: 4px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -302,15 +396,33 @@ input[type="file"] {
 /* ---------- Settings screen ---------- */
 .setting-section {
   background: var(--card);
+  border: 1px solid var(--border);
   border-radius: calc(14px * var(--ui-scale));
   padding: 4px calc(16px * var(--ui-scale));
 }
 
 .setting-section summary {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: calc(14px * var(--ui-scale)) 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+}
+.setting-section summary::-webkit-details-marker {
+  display: none;
+}
+.setting-section summary::after {
+  content: "⌄";
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+.setting-section[open] summary::after {
+  transform: rotate(180deg);
 }
 
 .setting-body {
@@ -340,17 +452,19 @@ input[type="file"] {
 
 .pill {
   background: var(--bg);
-  border: 2px solid #2a3b4d;
+  border: 2px solid var(--border);
   color: var(--text);
   border-radius: 999px;
   padding: calc(8px * var(--button-scale)) calc(14px * var(--button-scale));
   font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .pill.selected {
   border-color: var(--accent);
-  background: #1e2e40;
+  background: var(--pill-selected-bg);
+  color: var(--accent);
   font-weight: 700;
 }
 .pill.selected::before {
@@ -366,7 +480,7 @@ input[type="file"] {
 }
 
 .toggle-switch {
-  background: #2a3b4d;
+  background: var(--border);
   border: none;
   border-radius: 999px;
   padding: 6px 14px;
@@ -378,7 +492,8 @@ input[type="file"] {
 }
 
 .toggle-switch[aria-checked="true"] {
-  background: var(--accent-dark);
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .slider-row {
@@ -391,4 +506,5 @@ input[type="file"] {
 
 .slider-row input[type="range"] {
   flex: 1;
+  accent-color: var(--accent);
 }

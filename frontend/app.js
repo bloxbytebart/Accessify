@@ -25,6 +25,7 @@ const contentBtns = document.querySelectorAll(".content-btn");
 const textInputArea = document.getElementById("text-input-area");
 const imageInputArea = document.getElementById("image-input-area");
 const documentInputArea = document.getElementById("document-input-area");
+const voiceContentArea = document.getElementById("voice-content-area");
 const comingSoonArea = document.getElementById("coming-soon-area");
 const contentTextEl = document.getElementById("content-text");
 const contentImageInput = document.getElementById("content-image-input");
@@ -77,10 +78,17 @@ contentBtns.forEach((btn) => {
     textInputArea.classList.toggle("hidden", selectedContentType !== "text");
     imageInputArea.classList.toggle("hidden", selectedContentType !== "image");
     documentInputArea.classList.toggle("hidden", selectedContentType !== "document");
+    voiceContentArea.classList.toggle("hidden", selectedContentType !== "voice");
     comingSoonArea.classList.toggle(
       "hidden",
-      selectedContentType === "text" || selectedContentType === "image" || selectedContentType === "document"
+      ["text", "image", "document", "voice"].includes(selectedContentType)
     );
+    if (!(mediaRecorder && mediaRecorder.state === "recording")) {
+      setBtnLabel(micBtn, micIdleLabel("home"));
+    }
+    instructionTextEl.placeholder = selectedContentType === "voice"
+      ? "e.g. The sky is blue and the grass is green. Translate that into Hindi."
+      : "e.g. Translate this into Hindi and make it simple";
   });
 });
 
@@ -106,7 +114,12 @@ contentDocumentInput.addEventListener("change", () => {
     return;
   }
   selectedDocumentFile = file;
-  documentFilenameEl.textContent = `📄 ${file.name}`;
+  documentFilenameEl.replaceChildren();
+  const icon = document.createElement("span");
+  icon.className = "icon icon-document";
+  icon.setAttribute("aria-hidden", "true");
+  documentFilenameEl.appendChild(icon);
+  documentFilenameEl.appendChild(document.createTextNode(" " + file.name));
   documentFilenameEl.classList.remove("hidden");
 });
 
@@ -145,12 +158,25 @@ function stopRecording() {
   setRecordingUI(activeRecordingTarget, false);
 }
 
+function micIdleLabel(target) {
+  if (target === "home") {
+    return selectedContentType === "voice" ? "Record everything" : "Tell me what you need";
+  }
+  return "Ask a follow-up";
+}
+
+function setBtnLabel(btn, text) {
+  const label = btn.querySelector(".btn-label");
+  if (label) label.textContent = text;
+  else btn.textContent = text; // fallback if markup ever changes
+}
+
 function setRecordingUI(target, isRecording) {
   const btn = target === "home" ? micBtn : followupMicBtn;
   const indicator = target === "home" ? recordingIndicator : followupRecordingIndicator;
   btn.classList.toggle("recording", isRecording);
   indicator.classList.toggle("hidden", !isRecording);
-  btn.textContent = isRecording ? "🎙️ Tap to stop" : (target === "home" ? "🎙️ Tell me what you need" : "🎙️ Ask a follow-up");
+  setBtnLabel(btn, isRecording ? "Tap to stop" : micIdleLabel(target));
 }
 
 micBtn.addEventListener("click", () => {
@@ -187,8 +213,12 @@ async function submitHome({ instructionText, audioBlob }) {
 
   const form = new FormData();
   form.append("history_json", "[]");
+  form.append("combined", selectedContentType === "voice" ? "true" : "false");
 
-  if (selectedContentType === "text") {
+  if (selectedContentType === "voice") {
+    // content + instruction both live in the same recording/typed text
+    // that's about to be appended below - nothing extra to validate here.
+  } else if (selectedContentType === "text") {
     const contentText = contentTextEl.value.trim();
     if (!contentText) {
       showError(homeError, "Add some text content first.");
@@ -276,7 +306,12 @@ function showLoading(isLoading) {
 }
 
 function showError(el, message) {
-  el.textContent = `⚠️ ${message}`;
+  el.replaceChildren();
+  const icon = document.createElement("span");
+  icon.className = "icon icon-warning";
+  icon.setAttribute("aria-hidden", "true");
+  el.appendChild(icon);
+  el.appendChild(document.createTextNode(" " + message));
   el.classList.remove("hidden");
 }
 

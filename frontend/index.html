@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="style.css" />
+<link rel="icon" type="image/png" href="assets/logo-icon.png" />
 </head>
 <body>
 
@@ -34,16 +35,16 @@
   <!-- ============ HOME SCREEN ============ -->
   <main id="screen-home" class="screen">
     <div class="top-bar">
-      <h1>🌐 Accessify</h1>
-      <button id="settings-btn-home" class="icon-btn" aria-label="Accessibility settings">⚙️</button>
+      <img src="assets/logo-wordmark.png" alt="Accessify" class="brand-logo" />
+      <button id="settings-btn-home" class="icon-btn" aria-label="Accessibility settings"><span class="icon icon-settings" aria-hidden="true"></span></button>
     </div>
     <p class="subtitle">What do you have?</p>
 
     <div class="content-grid">
-      <button class="content-btn" data-type="image">📷<span>Image</span></button>
-      <button class="content-btn" data-type="document">📄<span>Document</span></button>
-      <button class="content-btn active" data-type="text">📝<span>Text</span><span class="active-check" aria-hidden="true">✓</span></button>
-      <button class="content-btn" data-type="voice">🎙️<span>Voice</span></button>
+      <button class="content-btn" data-type="image"><span class="icon icon-camera" aria-hidden="true"></span><span>Image</span></button>
+      <button class="content-btn" data-type="document"><span class="icon icon-document" aria-hidden="true"></span><span>Document</span></button>
+      <button class="content-btn active" data-type="text"><span class="icon icon-text" aria-hidden="true"></span><span>Text</span><span class="active-check" aria-hidden="true">✓</span></button>
+      <button class="content-btn" data-type="voice"><span class="icon icon-mic" aria-hidden="true"></span><span>Voice</span></button>
     </div>
 
     <div id="text-input-area" class="input-area">
@@ -63,12 +64,18 @@
       <p id="document-filename" class="hint hidden"></p>
     </div>
 
+    <div id="voice-content-area" class="input-area hidden">
+      <p class="hint"><span class="icon icon-mic" aria-hidden="true"></span> Tap the mic below and say everything in one go —
+        your content, then what you want done with it (or the other way
+        around). Or type it all as one block if you'd rather.</p>
+    </div>
+
     <div id="coming-soon-area" class="input-area hidden">
       <p class="hint">This input type isn't wired up yet in this build — coming in a later phase.</p>
     </div>
 
     <div class="instruction-area">
-      <button id="mic-btn" class="mic-btn">🎙️ Tell me what you need</button>
+      <button id="mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label">Tell me what you need</span></button>
       <div id="recording-indicator" class="hidden">● Recording… tap again to stop</div>
       <p class="or-divider">or type it</p>
       <input id="instruction-text" type="text" placeholder="e.g. Translate this into Hindi and make it simple" />
@@ -81,9 +88,9 @@
   <!-- ============ OUTPUT SCREEN ============ -->
   <main id="screen-output" class="screen hidden">
     <div class="top-bar">
-      <button id="back-btn" class="icon-btn" aria-label="Back">←</button>
-      <h1>Accessify</h1>
-      <button id="settings-btn-output" class="icon-btn" aria-label="Accessibility settings">⚙️</button>
+      <button id="back-btn" class="icon-btn" aria-label="Back"><span class="icon icon-back" aria-hidden="true"></span></button>
+      <img src="assets/logo-wordmark.png" alt="Accessify" class="brand-logo" />
+      <button id="settings-btn-output" class="icon-btn" aria-label="Accessibility settings"><span class="icon icon-settings" aria-hidden="true"></span></button>
     </div>
 
     <p class="detected-instruction" id="detected-instruction"></p>
@@ -92,12 +99,12 @@
       <p id="result-text"></p>
     </div>
 
-    <button id="read-aloud-btn" class="secondary-btn">🔊 Read aloud</button>
+    <button id="read-aloud-btn" class="secondary-btn"><span class="icon icon-audio" aria-hidden="true"></span> Read aloud</button>
 
     <p id="output-error" class="error hidden"></p>
 
     <div class="instruction-area">
-      <button id="followup-mic-btn" class="mic-btn">🎙️ Ask a follow-up</button>
+      <button id="followup-mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label">Ask a follow-up</span></button>
       <div id="followup-recording-indicator" class="hidden">● Recording… tap again to stop</div>
       <p class="or-divider">or type it</p>
       <input id="followup-text" type="text" placeholder="e.g. Explain that word" />
@@ -108,7 +115,7 @@
   <!-- ============ SETTINGS SCREEN ============ -->
   <main id="screen-settings" class="screen hidden">
     <div class="top-bar">
-      <button id="settings-back-btn" class="icon-btn" aria-label="Back">←</button>
+      <button id="settings-back-btn" class="icon-btn" aria-label="Back"><span class="icon icon-back" aria-hidden="true"></span></button>
       <h1>Accessibility Settings</h1>
       <span class="icon-btn-spacer" aria-hidden="true"></span>
     </div>
@@ -129,8 +136,13 @@
     </details>
 
     <details class="setting-section">
-      <summary>👁️ Visual</summary>
+      <summary><span class="icon icon-visual" aria-hidden="true"></span> Visual</summary>
       <div class="setting-body">
+        <div class="toggle-row" data-setting="darkMode">
+          <span>Dark mode</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+        </div>
+
         <p class="control-label">Text size</p>
         <div class="pill-group" data-setting="textSize">
           <button class="pill" data-value="small">Small</button>
@@ -171,7 +183,7 @@
     </details>
 
     <details class="setting-section">
-      <summary>◼️ High Contrast</summary>
+      <summary><span class="icon icon-contrast" aria-hidden="true"></span> High Contrast</summary>
       <div class="setting-body">
         <p class="control-label">Contrast level</p>
         <div class="pill-group" data-setting="contrast">
@@ -193,7 +205,7 @@
     </details>
 
     <details class="setting-section">
-      <summary>🔊 Audio</summary>
+      <summary><span class="icon icon-audio" aria-hidden="true"></span> Audio</summary>
       <div class="setting-body">
         <div class="toggle-row" data-setting="audioCues">
           <span>Audio cues</span>

@@ -8,6 +8,7 @@ const SETTINGS_KEY = "accessify_settings_v1";
 
 const DEFAULTS = {
   cvdFilter: "off",        // off | grayscale | boost
+  darkMode: false,
   textSize: "medium",      // small | medium | large | xlarge
   uiSize: "medium",
   buttonSize: "medium",
@@ -66,6 +67,7 @@ function apply(settings) {
   root.style.setProperty("--cvd-filter", cvdMap[settings.cvdFilter] || "none");
 
   root.setAttribute("data-contrast", settings.contrast);
+  root.setAttribute("data-theme", settings.darkMode ? "dark" : "light");
   document.body.classList.toggle("strong-borders", !!settings.strongBorders);
   document.body.classList.toggle("clear-text", !!settings.clearerText);
 }

@@ -121,6 +121,7 @@ async def transform(
     content_text: str = Form(""),
     instruction_text: str = Form(""),
     history_json: str = Form("[]"),
+    combined: str = Form("false"),
     instruction_audio: Optional[UploadFile] = None,
     content_image: Optional[UploadFile] = None,
     content_document: Optional[UploadFile] = None,
@@ -137,56 +138,101 @@ async def transform(
     except json.JSONDecodeError:
         history = []
 
-    has_content = content_text.strip() or content_image is not None or content_document is not None
+    is_combined = combined == "true"
+
+    has_content = (
+        content_text.strip()
+        or content_image is not None
+        or content_document is not None
+        or (is_combined and (instruction_text.strip() or instruction_audio is not None))
+    )
     if not has_content and not history:
         return {"error": "No content provided and no prior conversation to follow up on."}
-    if not instruction_text.strip() and instruction_audio is None:
+    if not is_combined and not instruction_text.strip() and instruction_audio is None:
         return {"error": "No instruction given (neither typed text nor recorded audio)."}
 
     user_parts: List[types.Part] = []
     content_summary_for_history = "(none)"
 
-    if content_image is not None:
-        image_bytes = await content_image.read()
-        image_mime = (content_image.content_type or "image/jpeg").split(";")[0]
-        user_parts.append(
-            types.Part.from_text(
-                text="CONTENT: an image is attached below. Read any text in it "
-                "(OCR) and treat that - plus anything else relevant you can see "
-                "- as the CONTENT to transform, unless the instruction is "
-                "specifically asking you to describe or explain the image itself."
+    if is_combined:
+        # Voice-as-content mode: one single recording (or one block of typed
+        # text) contains BOTH the content and the instruction, spoken/typed
+        # together naturally, in either order. No separate content_text/
+        # content_image/content_document is sent in this mode.
+        if instruction_audio is not None:
+            audio_bytes = await instruction_audio.read()
+            mime_type = (instruction_audio.content_type or "audio/webm").split(";")[0]
+            user_parts.append(
+                types.Part.from_text(
+                    text="CONTENT + INSTRUCTION TOGETHER: the audio below "
+                    "contains BOTH the content the user wants transformed AND "
+                    "their spoken instruction for what to do with it, said "
+                    "naturally in one go (in either order - content first "
+                    "then instruction, or instruction first then content). "
+                    "Figure out which part is the content and which part is "
+                    "the instruction, then apply the instruction to the "
+                    "content. In detected_instruction, describe only the "
+                    "instruction part, not the content."
+                )
             )
-        )
-        user_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=image_mime))
-        content_summary_for_history = "(an image was provided as content)"
-    elif content_document is not None:
-        doc_bytes = await content_document.read()
-        doc_mime = (content_document.content_type or "application/pdf").split(";")[0]
-        user_parts.append(
-            types.Part.from_text(
-                text="CONTENT: a document is attached below. Read its text "
-                "content and treat that as the CONTENT to transform, unless "
-                "the instruction asks something else about the document "
-                "itself (e.g. 'how many pages')."
+            user_parts.append(types.Part.from_bytes(data=audio_bytes, mime_type=mime_type))
+            content_summary_for_history = "(content and instruction were given together via voice)"
+        else:
+            user_parts.append(
+                types.Part.from_text(
+                    text="CONTENT + INSTRUCTION TOGETHER (typed as one block):\n"
+                    f"{instruction_text}\n\n"
+                    "This text contains BOTH the content the user wants "
+                    "transformed AND their instruction for what to do with "
+                    "it, in either order. Figure out which part is which, "
+                    "then apply the instruction to the content. In "
+                    "detected_instruction, describe only the instruction "
+                    "part, not the content."
+                )
             )
-        )
-        user_parts.append(types.Part.from_bytes(data=doc_bytes, mime_type=doc_mime))
-        content_summary_for_history = "(a document was provided as content)"
+            content_summary_for_history = "(content and instruction were given together as typed text)"
     else:
-        content_summary_for_history = content_text if content_text.strip() else "(none - follow-up)"
-        user_parts.append(
-            types.Part.from_text(
-                text=f"CONTENT:\n{content_text if content_text.strip() else '(none - this is a follow-up, use the conversation so far)'}"
+        if content_image is not None:
+            image_bytes = await content_image.read()
+            image_mime = (content_image.content_type or "image/jpeg").split(";")[0]
+            user_parts.append(
+                types.Part.from_text(
+                    text="CONTENT: an image is attached below. Read any text in it "
+                    "(OCR) and treat that - plus anything else relevant you can see "
+                    "- as the CONTENT to transform, unless the instruction is "
+                    "specifically asking you to describe or explain the image itself."
+                )
             )
-        )
+            user_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=image_mime))
+            content_summary_for_history = "(an image was provided as content)"
+        elif content_document is not None:
+            doc_bytes = await content_document.read()
+            doc_mime = (content_document.content_type or "application/pdf").split(";")[0]
+            user_parts.append(
+                types.Part.from_text(
+                    text="CONTENT: a document is attached below. Read its text "
+                    "content and treat that as the CONTENT to transform, unless "
+                    "the instruction asks something else about the document "
+                    "itself (e.g. 'how many pages')."
+                )
+            )
+            user_parts.append(types.Part.from_bytes(data=doc_bytes, mime_type=doc_mime))
+            content_summary_for_history = "(a document was provided as content)"
+        else:
+            content_summary_for_history = content_text if content_text.strip() else "(none - follow-up)"
+            user_parts.append(
+                types.Part.from_text(
+                    text=f"CONTENT:\n{content_text if content_text.strip() else '(none - this is a follow-up, use the conversation so far)'}"
+                )
+            )
 
-    if instruction_audio is not None:
-        audio_bytes = await instruction_audio.read()
-        mime_type = (instruction_audio.content_type or "audio/webm").split(";")[0]
-        user_parts.append(types.Part.from_text(text="INSTRUCTION (spoken, transcribe then follow it):"))
-        user_parts.append(types.Part.from_bytes(data=audio_bytes, mime_type=mime_type))
-    else:
-        user_parts.append(types.Part.from_text(text=f"INSTRUCTION (typed):\n{instruction_text}"))
+        if instruction_audio is not None:
+            audio_bytes = await instruction_audio.read()
+            mime_type = (instruction_audio.content_type or "audio/webm").split(";")[0]
+            user_parts.append(types.Part.from_text(text="INSTRUCTION (spoken, transcribe then follow it):"))
+            user_parts.append(types.Part.from_bytes(data=audio_bytes, mime_type=mime_type))
+        else:
+            user_parts.append(types.Part.from_text(text=f"INSTRUCTION (typed):\n{instruction_text}"))
 
     contents = build_history_contents(history)
     contents.append(types.Content(role="user", parts=user_parts))
@@ -198,6 +244,10 @@ async def transform(
 
     try:
         response = client.models.generate_content(model=MODEL, contents=contents, config=config)
+    except genai.errors.ClientError as exc:
+        if exc.code == 429:
+            return {"error": "Getting a lot of requests right now — try again in a moment."}
+        return {"error": f"The AI request failed: {exc}"}
     except Exception as exc:  # noqa: BLE001 - surface any Gemini/SDK error as clean JSON,
         # not a raw 500 page the frontend can't parse (this is what caused
         # the "NetworkError" confusion when the model name was retired).
@@ -255,6 +305,13 @@ async def speak(text: str = Form(...), voice_speed: float = Form(1.0)):
             ),
         )
         pcm_data = tts_response.candidates[0].content.parts[0].inline_data.data
+    except genai.errors.ClientError as exc:
+        if exc.code == 429:
+            return JSONResponse(
+                {"error": "Getting a lot of requests right now — try again in a moment."},
+                status_code=429,
+            )
+        return JSONResponse({"error": f"TTS generation failed: {exc}"}, status_code=502)
     except Exception as exc:  # noqa: BLE001 - surface any Gemini/SDK error to the client
         return JSONResponse({"error": f"TTS generation failed: {exc}"}, status_code=502)
 
