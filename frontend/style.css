@@ -21,7 +21,9 @@
   /* Kahoot-style flat colors, one per content-type tile */
   --tile-image: #EF5350;      /* red */
   --tile-document: #2F86EB;   /* blue */
-  --tile-text: #F5B942;       /* yellow */
+  --tile-text: #96680C;       /* dark gold - darkened from bright yellow so
+                                  white text/icons pass WCAG AA (4.5:1);
+                                  see contrast note below */
   --tile-voice: #3CB878;      /* green */
 
   --overlay: rgba(247, 239, 225, 0.92);
@@ -149,16 +151,35 @@ body {
   gap: 8px;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.brand-icon {
+  height: calc(30px * var(--text-scale));
+  width: auto;
+  border-radius: calc(6px * var(--ui-scale));
+  flex: none;
+}
+
 .brand-logo {
   height: calc(28px * var(--text-scale));
   width: auto;
-  flex: 1;
-  /* the source PNG has an opaque white background rather than
-     transparency - multiply blend makes white pixels disappear into
-     whatever's behind them (our beige page), while the dark logo text
-     stays dark regardless. Standard trick for flattened logo exports. */
-  mix-blend-mode: multiply;
+  flex: none;
   object-fit: contain;
+}
+
+/* the wordmark PNG has genuine alpha transparency now (regenerated from
+   the original flattened white-background export), so a simple invert
+   flips its dark text to light text in dark mode - this would NOT have
+   been possible with the old mix-blend-mode:multiply approach, which
+   always keeps dark pixels dark regardless of what's behind them. */
+html[data-theme="dark"] .brand-logo {
+  filter: invert(1);
 }
 
 h1 {
@@ -218,7 +239,7 @@ h1 {
 
 .content-btn[data-type="image"] { background: var(--tile-image); }
 .content-btn[data-type="document"] { background: var(--tile-document); }
-.content-btn[data-type="text"] { background: var(--tile-text); color: #3A352E; }
+.content-btn[data-type="text"] { background: var(--tile-text); } /* white text/icon inherited like the other 3 tiles */
 .content-btn[data-type="voice"] { background: var(--tile-voice); }
 
 .content-btn span { font-size: 1rem; font-weight: 600; }
