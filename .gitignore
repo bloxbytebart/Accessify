@@ -46,3 +46,6 @@ Thumbs.db
 accessifykey
 *.jks
 *.keystore
+
+venv/
+.venv/
