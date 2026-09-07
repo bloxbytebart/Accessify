@@ -87,8 +87,8 @@ contentBtns.forEach((btn) => {
       setBtnLabel(micBtn, micIdleLabel("home"));
     }
     instructionTextEl.placeholder = selectedContentType === "voice"
-      ? "e.g. The sky is blue and the grass is green. Translate that into Hindi."
-      : "e.g. Translate this into Hindi and make it simple";
+      ? window.AccessifyI18n.t("instruction.placeholder_voice")
+      : window.AccessifyI18n.t("instruction.placeholder");
   });
 });
 
@@ -149,7 +149,7 @@ async function startRecording(target) {
   } catch (err) {
     console.error("getUserMedia failed:", err.name, err.message);
     showError(target === "home" ? homeError : outputError,
-      "Couldn't access the microphone. You can type your instruction instead.");
+      window.AccessifyI18n.t("error.mic_access"));
   }
 }
 
@@ -161,9 +161,11 @@ function stopRecording() {
 
 function micIdleLabel(target) {
   if (target === "home") {
-    return selectedContentType === "voice" ? "Record everything" : "Tell me what you need";
+    return selectedContentType === "voice"
+      ? window.AccessifyI18n.t("mic.record_everything")
+      : window.AccessifyI18n.t("mic.tell_me");
   }
-  return "Ask a follow-up";
+  return window.AccessifyI18n.t("mic.ask_followup");
 }
 
 function setBtnLabel(btn, text) {
@@ -177,7 +179,7 @@ function setRecordingUI(target, isRecording) {
   const indicator = target === "home" ? recordingIndicator : followupRecordingIndicator;
   btn.classList.toggle("recording", isRecording);
   indicator.classList.toggle("hidden", !isRecording);
-  setBtnLabel(btn, isRecording ? "Tap to stop" : micIdleLabel(target));
+  setBtnLabel(btn, isRecording ? window.AccessifyI18n.t("mic.tap_to_stop") : micIdleLabel(target));
 }
 
 micBtn.addEventListener("click", () => {
@@ -193,13 +195,13 @@ followupMicBtn.addEventListener("click", () => {
 // ============ Typed fallback buttons ============
 goBtn.addEventListener("click", () => {
   const text = instructionTextEl.value.trim();
-  if (!text) { showError(homeError, "Type an instruction, or use the mic button."); return; }
+  if (!text) { showError(homeError, window.AccessifyI18n.t("error.no_instruction")); return; }
   submitHome({ instructionText: text });
 });
 
 followupGoBtn.addEventListener("click", () => {
   const text = followupTextEl.value.trim();
-  if (!text) { showError(outputError, "Type a follow-up, or use the mic button."); return; }
+  if (!text) { showError(outputError, window.AccessifyI18n.t("error.no_followup")); return; }
   submitFollowup({ instructionText: text });
 });
 
@@ -222,24 +224,24 @@ async function submitHome({ instructionText, audioBlob }) {
   } else if (selectedContentType === "text") {
     const contentText = contentTextEl.value.trim();
     if (!contentText) {
-      showError(homeError, "Add some text content first.");
+      showError(homeError, window.AccessifyI18n.t("error.no_text_content"));
       return;
     }
     form.append("content_text", contentText);
   } else if (selectedContentType === "image") {
     if (!selectedImageFile) {
-      showError(homeError, "Choose or take a photo first.");
+      showError(homeError, window.AccessifyI18n.t("error.no_image"));
       return;
     }
     form.append("content_image", selectedImageFile, selectedImageFile.name || "content.jpg");
   } else if (selectedContentType === "document") {
     if (!selectedDocumentFile) {
-      showError(homeError, "Choose a PDF first.");
+      showError(homeError, window.AccessifyI18n.t("error.no_pdf"));
       return;
     }
     form.append("content_document", selectedDocumentFile, selectedDocumentFile.name || "content.pdf");
   } else {
-    showError(homeError, "This input type isn't wired up yet in this build — try Text, Image, or Document.");
+    showError(homeError, window.AccessifyI18n.t("error.type_not_ready"));
     return;
   }
 
@@ -274,7 +276,7 @@ async function callTransform(form, { isFollowup }) {
     }
 
     history = data.history || history;
-    detectedInstructionEl.textContent = `You asked: "${data.detected_instruction || ""}"`;
+    detectedInstructionEl.textContent = window.AccessifyI18n.t("you_asked", { instruction: data.detected_instruction || "" });
     resultTextEl.textContent = data.transformed_output || "";
     clearError(outputError);
     if (settings.audioCues) window.AccessifySettings.playCue("success");
@@ -283,7 +285,7 @@ async function callTransform(form, { isFollowup }) {
   } catch (err) {
     if (settings.audioCues) window.AccessifySettings.playCue("error");
     showError(isFollowup ? outputError : homeError,
-      `Couldn't reach the backend at ${API_BASE}. Is it running? (${err.message})`);
+      window.AccessifyI18n.t("error.backend_unreachable", { url: API_BASE, error: err.message }));
   } finally {
     showLoading(false);
   }
@@ -322,6 +324,20 @@ function clearError(el) {
 }
 
 // ============ Settings screen wiring ============
+const languageSelect = document.getElementById("language-select");
+if (languageSelect && window.AccessifyI18n) {
+  window.AccessifyI18n.LANGUAGES.forEach((lang) => {
+    const opt = document.createElement("option");
+    opt.value = lang.code;
+    opt.textContent = lang.native;
+    languageSelect.appendChild(opt);
+  });
+  languageSelect.value = settings.uiLanguage;
+  languageSelect.addEventListener("change", () => {
+    updateSetting("uiLanguage", languageSelect.value);
+  });
+}
+
 document.querySelectorAll(".pill-group").forEach((group) => {
   const key = group.dataset.setting;
   const pills = group.querySelectorAll(".pill");
@@ -343,7 +359,7 @@ document.querySelectorAll(".toggle-row").forEach((row) => {
   function render() {
     const isOn = !!settings[key];
     btn.setAttribute("aria-checked", String(isOn));
-    label.textContent = isOn ? "On" : "Off";
+    label.textContent = isOn ? window.AccessifyI18n.t("toggle.on") : window.AccessifyI18n.t("toggle.off");
   }
   render();
 
@@ -361,4 +377,15 @@ document.querySelectorAll('input[type="range"][data-setting]').forEach((slider) 
   });
 });
 
-
+// ============ Android hardware/gesture back button ============
+if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+  window.Capacitor.Plugins.App.addListener("backButton", () => {
+    if (!screenSettings.classList.contains("hidden")) {
+      showScreen(screenBeforeSettings);
+    } else if (!screenOutput.classList.contains("hidden")) {
+      showScreen("home");
+    } else {
+      window.Capacitor.Plugins.App.exitApp();
+    }
+  });
+}

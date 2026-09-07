@@ -529,3 +529,23 @@ input[type="file"] {
   flex: 1;
   accent-color: var(--accent);
 }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.language-select {
+  width: 100%;
+  background: var(--card);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: calc(10px * var(--button-scale)) calc(14px * var(--button-scale));
+  font-size: 0.95rem;
+  font-weight: 600;
+}

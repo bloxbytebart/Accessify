@@ -7,6 +7,7 @@
 const SETTINGS_KEY = "accessify_settings_v1";
 
 const DEFAULTS = {
+  uiLanguage: "en",        // any code from AccessifyI18n.LANGUAGES
   cvdFilter: "off",        // off | grayscale | boost
   darkMode: false,
   textSize: "medium",      // small | medium | large | xlarge
@@ -68,8 +69,15 @@ function apply(settings) {
 
   root.setAttribute("data-contrast", settings.contrast);
   root.setAttribute("data-theme", settings.darkMode ? "dark" : "light");
+  root.setAttribute("lang", settings.uiLanguage || "en");
   document.body.classList.toggle("strong-borders", !!settings.strongBorders);
   document.body.classList.toggle("clear-text", !!settings.clearerText);
+
+  if (window.AccessifyI18n) {
+    window.AccessifyI18n.load(settings.uiLanguage || "en").then(() => {
+      window.AccessifyI18n.apply();
+    });
+  }
 }
 
 function playCue(type) {

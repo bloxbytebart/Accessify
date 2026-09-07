@@ -12,8 +12,17 @@
 </head>
 <body>
 
-
-    
+  <!-- Hidden SVG filter defs used by the Color Blind section.
+       IMPORTANT: these are honestly-scoped effects, not a "cure":
+       - grayscale is a real, correct transform
+       - boost-saturation genuinely increases hue separation for some
+         anomalous (not fully dichromatic) color vision
+       We deliberately do NOT ship "protanopia/deuteranopia correction"
+       filters - the matrices commonly found online for that are built to
+       SIMULATE color blindness for sighted viewers, not correct it for
+       colorblind viewers. Applying a simulation matrix to a colorblind
+       person's own screen does not help them and could make things worse,
+       so we don't pretend otherwise here. See README. -->
   <svg width="0" height="0" style="position:absolute">
     <filter id="cvd-grayscale">
       <feColorMatrix type="saturate" values="0" />
@@ -23,67 +32,71 @@
     </filter>
   </svg>
 
- <!--homescreeeeeeeeeeeeeeeen-->
+  <!-- ============ HOME SCREEN ============ -->
   <main id="screen-home" class="screen">
     <div class="top-bar">
       <div class="brand">
         <img src="assets/logo-icon.png" alt="" class="brand-icon" />
         <img src="assets/logo-wordmark.png" alt="Accessify" class="brand-logo" />
       </div>
-      <button id="settings-btn-home" class="icon-btn" aria-label="Accessibility settings"><span class="icon icon-settings" aria-hidden="true"></span></button>
+      <button id="settings-btn-home" class="icon-btn" aria-label="Accessibility settings" data-i18n-aria-label="settings.aria_label"><span class="icon icon-settings" aria-hidden="true"></span></button>
     </div>
-    <p class="subtitle">What do you have?</p>
+    <p class="subtitle" data-i18n="home.subtitle">What do you have?</p>
 
     <div class="content-grid">
-      <button class="content-btn" data-type="image"><span class="icon icon-camera" aria-hidden="true"></span><span>Image</span></button>
-      <button class="content-btn" data-type="document"><span class="icon icon-document" aria-hidden="true"></span><span>Document</span></button>
-      <button class="content-btn active" data-type="text"><span class="icon icon-text" aria-hidden="true"></span><span>Text</span><span class="active-check" aria-hidden="true">✓</span></button>
-      <button class="content-btn" data-type="voice"><span class="icon icon-mic" aria-hidden="true"></span><span>Voice</span></button>
+      <button class="content-btn" data-type="image"><span class="icon icon-camera" aria-hidden="true"></span><span data-i18n="content.image">Image</span></button>
+      <button class="content-btn" data-type="document"><span class="icon icon-document" aria-hidden="true"></span><span data-i18n="content.document">Document</span></button>
+      <button class="content-btn active" data-type="text"><span class="icon icon-text" aria-hidden="true"></span><span data-i18n="content.text">Text</span><span class="active-check" aria-hidden="true">✓</span></button>
+      <button class="content-btn" data-type="voice"><span class="icon icon-mic" aria-hidden="true"></span><span data-i18n="content.voice">Voice</span></button>
     </div>
 
     <div id="text-input-area" class="input-area">
-      <label for="content-text">Paste or type your content</label>
-      <textarea id="content-text" rows="6" placeholder="Paste text here…"></textarea>
+      <label for="content-text" data-i18n="content.text_label">Paste or type your content</label>
+      <textarea id="content-text" rows="6" placeholder="Paste text here…" data-i18n-placeholder="content.text_placeholder"></textarea>
     </div>
 
     <div id="image-input-area" class="input-area hidden">
-      <label for="content-image-input">Choose a photo, or take one now</label>
+      <label for="content-image-input" data-i18n="content.image_label">Choose a photo, or take one now</label>
       <input type="file" id="content-image-input" accept="image/*" capture="environment" />
-      <img id="image-preview" class="image-preview hidden" alt="Preview of the selected photo" />
+      <img id="image-preview" class="image-preview hidden" alt="Preview of the selected photo" data-i18n-aria-label="content.image_alt" />
     </div>
 
     <div id="document-input-area" class="input-area hidden">
-      <label for="content-document-input">Choose a PDF</label>
+      <label for="content-document-input" data-i18n="content.document_label">Choose a PDF</label>
       <input type="file" id="content-document-input" accept="application/pdf" />
       <p id="document-filename" class="hint hidden"></p>
     </div>
 
     <div id="voice-content-area" class="input-area hidden">
-      <p class="hint"><span class="icon icon-mic" aria-hidden="true"></span> Add your instructions here.</p>
+      <p class="hint"><span class="icon icon-mic" aria-hidden="true"></span> <span data-i18n="content.voice_hint">Tap the mic below and say everything in one go —
+        your content, then what you want done with it (or the other way
+        around). Or type it all as one block if you'd rather.</span></p>
     </div>
 
-
+    <div id="coming-soon-area" class="input-area hidden">
+      <p class="hint" data-i18n="content.coming_soon">This input type isn't wired up yet in this build — coming in a later phase.</p>
+    </div>
 
     <div class="instruction-area">
-      <button id="mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label">Tell me what you need</span></button>
-      <div id="recording-indicator" class="hidden">● Recording… tap again to stop</div>
-      <p class="or-divider">or type it-</p>
-      <input id="instruction-text" type="text" placeholder="e.g. Translate this into Hindi and make it simple" />
-      <button id="go-btn" class="go-btn">Go</button>
+      <button id="mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label" data-i18n="mic.tell_me">Tell me what you need</span></button>
+      <div id="recording-indicator" class="hidden">● <span data-i18n="recording.indicator">Recording… tap again to stop</span></div>
+      <p class="or-divider" data-i18n="or_divider">or type it</p>
+      <input id="instruction-text" type="text" placeholder="e.g. Translate this into Hindi and make it simple" data-i18n-placeholder="instruction.placeholder" />
+      <button id="go-btn" class="go-btn" data-i18n="go_btn">Go</button>
     </div>
 
     <p id="home-error" class="error hidden"></p>
   </main>
 
-  <!--output screen -->
+  <!-- ============ OUTPUT SCREEN ============ -->
   <main id="screen-output" class="screen hidden">
     <div class="top-bar">
-      <button id="back-btn" class="icon-btn" aria-label="Back"><span class="icon icon-back" aria-hidden="true"></span></button>
+      <button id="back-btn" class="icon-btn" aria-label="Back" data-i18n-aria-label="back.aria_label"><span class="icon icon-back" aria-hidden="true"></span></button>
       <div class="brand">
         <img src="assets/logo-icon.png" alt="" class="brand-icon" />
         <img src="assets/logo-wordmark.png" alt="Accessify" class="brand-logo" />
       </div>
-      <button id="settings-btn-output" class="icon-btn" aria-label="Accessibility settings"><span class="icon icon-settings" aria-hidden="true"></span></button>
+      <button id="settings-btn-output" class="icon-btn" aria-label="Accessibility settings" data-i18n-aria-label="settings.aria_label"><span class="icon icon-settings" aria-hidden="true"></span></button>
     </div>
 
     <p class="detected-instruction" id="detected-instruction"></p>
@@ -92,147 +105,157 @@
       <p id="result-text"></p>
     </div>
 
-    <button id="read-aloud-btn" class="secondary-btn"><span class="icon icon-audio" aria-hidden="true"></span> Read aloud</button>
+    <button id="read-aloud-btn" class="secondary-btn"><span class="icon icon-audio" aria-hidden="true"></span> <span data-i18n="read_aloud_btn">Read aloud</span></button>
 
     <p id="output-error" class="error hidden"></p>
 
     <div class="instruction-area">
-      <button id="followup-mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label">Ask a follow-up</span></button>
-      <div id="followup-recording-indicator" class="hidden">● Recording… tap again to stop</div>
-      <p class="or-divider">or type it</p>
-      <input id="followup-text" type="text" placeholder="e.g. Explain that word" />
-      <button id="followup-go-btn" class="go-btn">Go</button>
+      <button id="followup-mic-btn" class="mic-btn"><span class="icon icon-mic" aria-hidden="true"></span> <span class="btn-label" data-i18n="mic.ask_followup">Ask a follow-up</span></button>
+      <div id="followup-recording-indicator" class="hidden">● <span data-i18n="recording.indicator">Recording… tap again to stop</span></div>
+      <p class="or-divider" data-i18n="or_divider">or type it</p>
+      <input id="followup-text" type="text" placeholder="e.g. Explain that word" data-i18n-placeholder="followup.placeholder" />
+      <button id="followup-go-btn" class="go-btn" data-i18n="go_btn">Go</button>
     </div>
   </main>
 
-  <!--settings screen -->
+  <!-- ============ SETTINGS SCREEN ============ -->
   <main id="screen-settings" class="screen hidden">
     <div class="top-bar">
-      <button id="settings-back-btn" class="icon-btn" aria-label="Back"><span class="icon icon-back" aria-hidden="true"></span></button>
-      <h1>Accessibility Settings</h1>
+      <button id="settings-back-btn" class="icon-btn" aria-label="Back" data-i18n-aria-label="back.aria_label"><span class="icon icon-back" aria-hidden="true"></span></button>
+      <h1 data-i18n="settings.title">Accessibility Settings</h1>
       <span class="icon-btn-spacer" aria-hidden="true"></span>
     </div>
-    <p class="subtitle small">Pick what you need</p>
+    <p class="subtitle small" data-i18n="settings.subtitle">Pick what you need. Nothing else.</p>
+
+    <div class="setting-section" style="padding-top: 4px;">
+      <p class="control-label" data-i18n="section.language" style="margin-top:10px;">App Language</p>
+      <label for="language-select" class="visually-hidden" data-i18n="label.select_language">Choose your language</label>
+      <select id="language-select" class="language-select"></select>
+    </div>
 
     <details class="setting-section" open>
-      <summary>🎨 Color Blind</summary>
+      <summary>🎨 <span data-i18n="section.colorblind">Color Blind</span></summary>
       <div class="setting-body">
-        <p class="setting-note"></p>
-        <p class="control-label">Color filter</p>
+        <p class="setting-note" data-i18n="section.colorblind_note">This app never uses color alone to show
+          something — icons and text always come with it too.</p>
+        <p class="control-label" data-i18n="label.color_filter">Color filter</p>
         <div class="pill-group" data-setting="cvdFilter">
-          <button class="pill" data-value="off">Off</button>
-          <button class="pill" data-value="grayscale">Grayscale</button>
-          <button class="pill" data-value="boost">Boost color difference</button>
+          <button class="pill" data-value="off" data-i18n="pill.off">Off</button>
+          <button class="pill" data-value="grayscale" data-i18n="pill.grayscale">Grayscale</button>
+          <button class="pill" data-value="boost" data-i18n="pill.boost">Boost color difference</button>
         </div>
       </div>
     </details>
 
     <details class="setting-section">
-      <summary><span class="icon icon-visual" aria-hidden="true"></span> Visual</summary>
+      <summary><span class="icon icon-visual" aria-hidden="true"></span> <span data-i18n="section.visual">Visual</span></summary>
       <div class="setting-body">
         <div class="toggle-row" data-setting="darkMode">
-          <span>Dark mode</span>
-          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+          <span data-i18n="toggle.dark_mode">Dark mode</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state" data-i18n="toggle.off">Off</span></button>
         </div>
 
-        <p class="control-label">Text size</p>
+        <p class="control-label" data-i18n="label.text_size">Text size</p>
         <div class="pill-group" data-setting="textSize">
-          <button class="pill" data-value="small">Small</button>
-          <button class="pill" data-value="medium">Medium</button>
-          <button class="pill" data-value="large">Large</button>
-          <button class="pill" data-value="xlarge">Extra large</button>
+          <button class="pill" data-value="small" data-i18n="pill.small">Small</button>
+          <button class="pill" data-value="medium" data-i18n="pill.medium">Medium</button>
+          <button class="pill" data-value="large" data-i18n="pill.large">Large</button>
+          <button class="pill" data-value="xlarge" data-i18n="pill.xlarge">Extra large</button>
         </div>
 
-        <p class="control-label">UI size</p>
+        <p class="control-label" data-i18n="label.ui_size">UI size</p>
         <div class="pill-group" data-setting="uiSize">
-          <button class="pill" data-value="small">Small</button>
-          <button class="pill" data-value="medium">Medium</button>
-          <button class="pill" data-value="large">Large</button>
-          <button class="pill" data-value="xlarge">Extra large</button>
+          <button class="pill" data-value="small" data-i18n="pill.small">Small</button>
+          <button class="pill" data-value="medium" data-i18n="pill.medium">Medium</button>
+          <button class="pill" data-value="large" data-i18n="pill.large">Large</button>
+          <button class="pill" data-value="xlarge" data-i18n="pill.xlarge">Extra large</button>
         </div>
 
-        <p class="control-label">Button size</p>
+        <p class="control-label" data-i18n="label.button_size">Button size</p>
         <div class="pill-group" data-setting="buttonSize">
-          <button class="pill" data-value="small">Small</button>
-          <button class="pill" data-value="medium">Medium</button>
-          <button class="pill" data-value="large">Large</button>
-          <button class="pill" data-value="xlarge">Extra large</button>
+          <button class="pill" data-value="small" data-i18n="pill.small">Small</button>
+          <button class="pill" data-value="medium" data-i18n="pill.medium">Medium</button>
+          <button class="pill" data-value="large" data-i18n="pill.large">Large</button>
+          <button class="pill" data-value="xlarge" data-i18n="pill.xlarge">Extra large</button>
         </div>
 
-        <p class="control-label">Font</p>
+        <p class="control-label" data-i18n="label.font">Font</p>
         <div class="pill-group" data-setting="font">
-          <button class="pill" data-value="default">Default</button>
-          <button class="pill" data-value="dyslexia">Dyslexia-friendly</button>
+          <button class="pill" data-value="default" data-i18n="pill.default">Default</button>
+          <button class="pill" data-value="dyslexia" data-i18n="pill.dyslexia">Dyslexia-friendly</button>
         </div>
 
-        <p class="control-label">Spacing</p>
+        <p class="control-label" data-i18n="label.spacing">Spacing</p>
         <div class="pill-group" data-setting="spacing">
-          <button class="pill" data-value="compact">Compact</button>
-          <button class="pill" data-value="comfortable">Comfortable</button>
-          <button class="pill" data-value="spacious">Spacious</button>
+          <button class="pill" data-value="compact" data-i18n="pill.compact">Compact</button>
+          <button class="pill" data-value="comfortable" data-i18n="pill.comfortable">Comfortable</button>
+          <button class="pill" data-value="spacious" data-i18n="pill.spacious">Spacious</button>
         </div>
       </div>
     </details>
 
     <details class="setting-section">
-      <summary><span class="icon icon-contrast" aria-hidden="true"></span> High Contrast</summary>
+      <summary><span class="icon icon-contrast" aria-hidden="true"></span> <span data-i18n="section.high_contrast">High Contrast</span></summary>
       <div class="setting-body">
-        <p class="control-label">Contrast level</p>
+        <p class="control-label" data-i18n="label.contrast_level">Contrast level</p>
         <div class="pill-group" data-setting="contrast">
-          <button class="pill" data-value="off">Off</button>
-          <button class="pill" data-value="medium">Medium</button>
-          <button class="pill" data-value="high">High</button>
+          <button class="pill" data-value="off" data-i18n="pill.off">Off</button>
+          <button class="pill" data-value="medium" data-i18n="pill.medium">Medium</button>
+          <button class="pill" data-value="high" data-i18n="pill.high">High</button>
         </div>
 
         <div class="toggle-row" data-setting="strongBorders">
-          <span>Stronger borders</span>
-          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+          <span data-i18n="toggle.stronger_borders">Stronger borders</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state" data-i18n="toggle.off">Off</span></button>
         </div>
 
         <div class="toggle-row" data-setting="clearerText">
-          <span>Clearer text</span>
-          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+          <span data-i18n="toggle.clearer_text">Clearer text</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state" data-i18n="toggle.off">Off</span></button>
         </div>
       </div>
     </details>
 
     <details class="setting-section">
-      <summary><span class="icon icon-audio" aria-hidden="true"></span> Audio</summary>
+      <summary><span class="icon icon-audio" aria-hidden="true"></span> <span data-i18n="section.audio">Audio</span></summary>
       <div class="setting-body">
         <div class="toggle-row" data-setting="audioCues">
-          <span>Audio cues</span>
-          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+          <span data-i18n="toggle.audio_cues">Audio cues</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state" data-i18n="toggle.off">Off</span></button>
         </div>
 
-        <p class="control-label">Voice speed</p>
+        <p class="control-label" data-i18n="label.voice_speed">Voice speed</p>
         <div class="slider-row">
-          <span>Slower</span>
+          <span data-i18n="slider.slower">Slower</span>
           <input type="range" min="0.6" max="1.6" step="0.05" data-setting="voiceSpeed" />
-          <span>Faster</span>
+          <span data-i18n="slider.faster">Faster</span>
         </div>
 
-        <p class="control-label">Voice volume</p>
+        <p class="control-label" data-i18n="label.voice_volume">Voice volume</p>
         <div class="slider-row">
-          <span>Quiet</span>
+          <span data-i18n="slider.quiet">Quiet</span>
           <input type="range" min="0" max="1" step="0.05" data-setting="voiceVolume" />
-          <span>Loud</span>
+          <span data-i18n="slider.loud">Loud</span>
         </div>
 
         <div class="toggle-row" data-setting="readAloud">
-          <span>Automatically read results aloud</span>
-          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state">Off</span></button>
+          <span data-i18n="toggle.read_aloud_auto">Automatically read results aloud</span>
+          <button class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-state" data-i18n="toggle.off">Off</span></button>
         </div>
-        <p class="setting-note"></p>
+        <p class="setting-note" data-i18n="note.read_aloud">Reads results using your device's built-in
+          voice for now. Higher-quality voices in more languages are
+          coming soon.</p>
       </div>
     </details>
   </main>
 
   <div id="loading-overlay" class="hidden">
     <div class="spinner"></div>
-    <p>Working on it…</p>
+    <p data-i18n="loading">Working on it…</p>
   </div>
 
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
   <script src="settings.js"></script>
   <script src="app.js"></script>
 </body>
